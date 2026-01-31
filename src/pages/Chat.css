@@ -1,0 +1,125 @@
+.chat-header {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  background: #ff6b35;
+  color: white;
+}
+
+.chat-back {
+  font-size: 1.8rem;
+  cursor: pointer;
+  margin-right: 15px;
+}
+
+.chat-avatar {
+  font-size: 2.5rem;
+  margin-right: 12px;
+}
+
+.chat-header-info {
+  flex: 1;
+}
+
+.chat-header-nombre {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.chat-header-estado {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.chat-container {
+  --background: #ece5dd;
+}
+
+.chat-mensajes {
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  min-height: 100%;
+}
+
+.chat-vacio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: #888;
+  font-style: italic;
+}
+
+.chat-burbuja {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 15px;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.chat-burbuja.enviado {
+  align-self: flex-end;
+  background: #dcf8c6;
+  border-bottom-right-radius: 5px;
+}
+
+.chat-burbuja.recibido {
+  align-self: flex-start;
+  background: white;
+  border-bottom-left-radius: 5px;
+}
+
+.chat-burbuja-texto {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #333;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.chat-burbuja-hora {
+  display: block;
+  font-size: 0.7rem;
+  color: #888;
+  text-align: right;
+  margin-top: 4px;
+}
+
+.chat-footer {
+  background: #f0f0f0;
+}
+
+.chat-toolbar {
+  --background: #f0f0f0;
+  --border-width: 0;
+  padding: 8px 10px;
+}
+
+.chat-input-container {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 25px;
+  padding: 5px 5px 5px 15px;
+}
+
+.chat-input {
+  flex: 1;
+  --padding-start: 0;
+  --padding-end: 0;
+  font-size: 0.95rem;
+}
+
+.chat-btn-enviar {
+  --color: #ff6b35;
+  --padding-start: 10px;
+  --padding-end: 10px;
+  margin: 0;
+}
+
+.chat-btn-enviar ion-icon {
+  font-size: 1.5rem;
+}

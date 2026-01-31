@@ -1,0 +1,138 @@
+.escaner-container {
+  --background: #1a1a1a;
+}
+
+.escaner-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 20px;
+}
+
+.escaner-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.escaner-back {
+  font-size: 1.8rem;
+  color: white;
+  cursor: pointer;
+}
+
+.escaner-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: white;
+  margin: 0;
+}
+
+.escaner-flash {
+  font-size: 1.8rem;
+  color: white;
+  cursor: pointer;
+}
+
+.escaner-flash.activa {
+  color: #ffeb3b;
+}
+
+.escaner-visor {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.escaner-marco {
+  width: 250px;
+  height: 250px;
+  position: relative;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+}
+
+.escaner-esquina {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-color: #ff6b35;
+  border-style: solid;
+}
+
+.escaner-esquina-tl {
+  top: 0;
+  left: 0;
+  border-width: 4px 0 0 4px;
+  border-radius: 15px 0 0 0;
+}
+
+.escaner-esquina-tr {
+  top: 0;
+  right: 0;
+  border-width: 4px 4px 0 0;
+  border-radius: 0 15px 0 0;
+}
+
+.escaner-esquina-bl {
+  bottom: 0;
+  left: 0;
+  border-width: 0 0 4px 4px;
+  border-radius: 0 0 0 15px;
+}
+
+.escaner-esquina-br {
+  bottom: 0;
+  right: 0;
+  border-width: 0 4px 4px 0;
+  border-radius: 0 0 15px 0;
+}
+
+.escaner-linea {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  height: 3px;
+  background: #ff6b35;
+  box-shadow: 0 0 10px #ff6b35;
+  animation: escanear 2s infinite;
+}
+
+@keyframes escanear {
+  0% { top: 10%; }
+  50% { top: 85%; }
+  100% { top: 10%; }
+}
+
+.escaner-instrucciones {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.escaner-instrucciones p {
+  color: #ccc;
+  margin-bottom: 20px;
+}
+
+.escaner-error {
+  display: block;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+}
+
+.escaner-button {
+  --background: #ff6b35;
+  --border-radius: 10px;
+  height: 50px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.escaner-nota {
+  font-size: 0.8rem;
+  color: #888;
+  font-style: italic;
+}

@@ -1,0 +1,119 @@
+.miqr-container {
+  --background: #f5f5f5;
+  transition: all 0.3s ease;
+}
+
+.miqr-container.brillo-alto {
+  --background: #ffffff;
+}
+
+.miqr-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 20px;
+}
+
+.miqr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.miqr-back {
+  font-size: 1.8rem;
+  color: #ff6b35;
+  cursor: pointer;
+}
+
+.miqr-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+.miqr-brillo {
+  font-size: 1.8rem;
+  color: #999;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.miqr-brillo.activo {
+  color: #ffb300;
+}
+
+.miqr-info {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.miqr-info p {
+  color: #666;
+  margin: 0;
+}
+
+.miqr-codigo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: white;
+  border-radius: 20px;
+  padding: 30px 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin-bottom: 25px;
+}
+
+.miqr-codigo {
+  background: white;
+  padding: 15px;
+  border-radius: 15px;
+  margin-bottom: 20px;
+}
+
+.miqr-nombre {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 5px 0;
+}
+
+.miqr-subtitulo {
+  color: #ff6b35;
+  font-weight: 500;
+  margin: 0;
+}
+
+.miqr-instrucciones {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.miqr-instrucciones h3 {
+  font-size: 1rem;
+  color: #333;
+  margin: 0 0 15px 0;
+}
+
+.miqr-instrucciones ol {
+  margin: 0;
+  padding-left: 20px;
+  color: #666;
+}
+
+.miqr-instrucciones li {
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.miqr-btn-volver {
+  --border-color: #ff6b35;
+  --color: #ff6b35;
+  --border-radius: 10px;
+  height: 45px;
+  margin-top: auto;
+}
