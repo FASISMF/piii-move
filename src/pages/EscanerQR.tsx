@@ -6,10 +6,10 @@ import {
   IonText
 } from '@ionic/react';
 import { arrowBack, flashlightOutline, flashlight } from 'ionicons/icons';
-import { useState, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db, auth } from '../services/firebase';
 import './EscanerQR.css';
 
 const EscanerQR: React.FC = () => {
@@ -17,39 +17,42 @@ const EscanerQR: React.FC = () => {
   const [error, setError] = useState('');
   const [escaneando, setEscaneando] = useState(false);
   const [linternaActiva, setLinternaActiva] = useState(false);
+  const escaneandoRef = useRef(false);
 
-  // Simulación de escaneo para desarrollo web
-  // En producción con Capacitor, usaríamos el plugin real
   const iniciarEscaneo = async () => {
+    if (escaneandoRef.current) return;
+    
+    escaneandoRef.current = true;
     setEscaneando(true);
     setError('');
 
-    // En desarrollo web, simulamos con un prompt
-    // En producción, esto usará la cámara real
     const codigoSimulado = prompt('Introduce el código QR (UID del usuario):');
     
-    if (codigoSimulado) {
-      await verificarCodigo(codigoSimulado);
+    if (codigoSimulado && codigoSimulado.trim()) {
+      await verificarCodigo(codigoSimulado.trim());
     } else {
       setEscaneando(false);
+      escaneandoRef.current = false;
     }
   };
 
   const verificarCodigo = async (codigo: string) => {
+    const usuarioActual = auth.currentUser;
+    
+    if (usuarioActual && codigo === usuarioActual.uid) {
+      setError('No puedes escanearte a ti mismo.');
+      setEscaneando(false);
+      escaneandoRef.current = false;
+      return;
+    }
+
     try {
-      // Buscar usuario en Firestore
       const usuarioRef = doc(db, 'usuarios', codigo);
       const usuarioSnap = await getDoc(usuarioRef);
 
       if (usuarioSnap.exists()) {
-        const datosUsuario = usuarioSnap.data();
-        // Redirigir a ResultadoQR con los datos
-        history.push('/resultado-qr', { 
-          usuario: {
-            uid: codigo,
-            ...datosUsuario
-          }
-        });
+        // Navegar usando parámetro en URL
+        history.push(`/resultado-qr/${codigo}`);
       } else {
         setError('Código QR no válido. El usuario no existe.');
       }
@@ -58,12 +61,12 @@ const EscanerQR: React.FC = () => {
       console.error('Error verificando código:', err);
     } finally {
       setEscaneando(false);
+      escaneandoRef.current = false;
     }
   };
 
   const toggleLinterna = () => {
     setLinternaActiva(!linternaActiva);
-    // En producción, aquí activaríamos la linterna real
   };
 
   return (
@@ -74,7 +77,7 @@ const EscanerQR: React.FC = () => {
             <IonIcon 
               icon={arrowBack} 
               className="escaner-back" 
-              onClick={() => history.goBack()}
+              onClick={() => history.push('/dashboard')}
             />
             <h1 className="escaner-title">Escanear QR</h1>
             <IonIcon 
