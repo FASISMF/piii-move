@@ -65,10 +65,10 @@ const App: React.FC = () => (
         {/* App principal */}
         <Route exact path="/dashboard" component={Dashboard} />
         <Route exact path="/escaner-qr" component={EscanerQR} />
-        <Route exact path="/resultado-qr" component={ResultadoQR} />
+        <Route exact path="/resultado-qr/:usuarioId" component={ResultadoQR} />
         <Route exact path="/mi-codigo-qr" component={MiCodigoQR} />
         <Route exact path="/historial-conversaciones" component={HistorialConversaciones} />
-        <Route exact path="/chat" component={Chat} />
+        <Route exact path="/chat/:conversacionId/:usuarioId" component={Chat} />
         <Route exact path="/mi-perfil" component={MiPerfil} />
       </IonRouterOutlet>
     </IonReactRouter>

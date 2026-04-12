@@ -2,13 +2,20 @@ import {
   IonContent, 
   IonPage, 
   IonIcon,
-  IonText,
   IonSpinner
 } from '@ionic/react';
 import { arrowBack, chatbubbleEllipsesOutline, personCircleOutline } from 'ionicons/icons';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
-import { collection, query, where, getDocs, doc, getDoc, orderBy } from 'firebase/firestore';
+import { 
+  collection, 
+  query, 
+  where, 
+  doc, 
+  getDoc, 
+  onSnapshot,
+  orderBy 
+} from 'firebase/firestore';
 import { db, auth } from '../services/firebase';
 import './HistorialConversaciones.css';
 
@@ -23,94 +30,143 @@ interface Conversacion {
   };
 }
 
+// Cache para usuarios ya consultados
+const usuariosCache: Map<string, { uid: string; nombre: string }> = new Map();
+
 const HistorialConversaciones: React.FC = () => {
   const history = useHistory();
   const [conversaciones, setConversaciones] = useState<Conversacion[]>([]);
   const [cargando, setCargando] = useState(true);
   const usuarioActual = auth.currentUser;
+  const unsubscribeRef = useRef<(() => void) | null>(null);
 
-  useEffect(() => {
-    cargarConversaciones();
-  }, []);
-
-  const cargarConversaciones = async () => {
-    if (!usuarioActual) return;
+  // Función para obtener datos de usuario (con cache)
+  const obtenerUsuario = useCallback(async (uid: string): Promise<{ uid: string; nombre: string }> => {
+    // Revisar cache primero
+    if (usuariosCache.has(uid)) {
+      return usuariosCache.get(uid)!;
+    }
 
     try {
-      const conversacionesRef = collection(db, 'conversaciones');
-      const q = query(
-        conversacionesRef,
-        where('participantes', 'array-contains', usuarioActual.uid)
-      );
-
-      const snapshot = await getDocs(q);
-      const conversacionesData: Conversacion[] = [];
-
-      for (const docSnap of snapshot.docs) {
-        const data = docSnap.data();
-        
-        // Obtener datos del otro participante
-        const otroUsuarioId = data.participantes.find(
-          (p: string) => p !== usuarioActual.uid
-        );
-
-        let otroUsuario = { uid: otroUsuarioId, nombre: 'Usuario' };
-
-        if (otroUsuarioId) {
-          const usuarioRef = doc(db, 'usuarios', otroUsuarioId);
-          const usuarioSnap = await getDoc(usuarioRef);
-          if (usuarioSnap.exists()) {
-            otroUsuario = {
-              uid: otroUsuarioId,
-              nombre: usuarioSnap.data().nombre || 'Usuario'
-            };
-          }
-        }
-
-        conversacionesData.push({
-          id: docSnap.id,
-          participantes: data.participantes,
-          ultimoMensaje: data.ultimoMensaje || 'Sin mensajes',
-          ultimoMensajeFecha: data.ultimoMensajeFecha,
-          otroUsuario
-        });
-      }
-
-      // Ordenar por fecha del último mensaje (más reciente primero)
-      conversacionesData.sort((a, b) => 
-        new Date(b.ultimoMensajeFecha).getTime() - new Date(a.ultimoMensajeFecha).getTime()
-      );
-
-      setConversaciones(conversacionesData);
+      const usuarioRef = doc(db, 'usuarios', uid);
+      const usuarioSnap = await getDoc(usuarioRef);
+      
+      const usuario = {
+        uid,
+        nombre: usuarioSnap.exists() ? (usuarioSnap.data().nombre || 'Usuario') : 'Usuario'
+      };
+      
+      // Guardar en cache
+      usuariosCache.set(uid, usuario);
+      return usuario;
     } catch (error) {
-      console.error('Error al cargar conversaciones:', error);
-    } finally {
-      setCargando(false);
+      console.error('Error al obtener usuario:', error);
+      return { uid, nombre: 'Usuario' };
     }
-  };
+  }, []);
+
+  // Suscripción reactiva a conversaciones
+  useEffect(() => {
+    if (!usuarioActual) {
+      setCargando(false);
+      return;
+    }
+
+    setCargando(true);
+
+    const conversacionesRef = collection(db, 'conversaciones');
+    const q = query(
+      conversacionesRef,
+      where('participantes', 'array-contains', usuarioActual.uid)
+    );
+
+    // Suscripción en tiempo real
+    unsubscribeRef.current = onSnapshot(
+      q,
+      async (snapshot) => {
+        try {
+          const conversacionesPromises = snapshot.docs.map(async (docSnap) => {
+            const data = docSnap.data();
+            
+            // Obtener el otro participante
+            const otroUsuarioId = data.participantes.find(
+              (p: string) => p !== usuarioActual.uid
+            );
+
+            const otroUsuario = otroUsuarioId 
+              ? await obtenerUsuario(otroUsuarioId)
+              : { uid: '', nombre: 'Usuario' };
+
+            return {
+              id: docSnap.id,
+              participantes: data.participantes,
+              ultimoMensaje: data.ultimoMensaje || 'Sin mensajes',
+              ultimoMensajeFecha: data.ultimoMensajeFecha || new Date().toISOString(),
+              otroUsuario
+            } as Conversacion;
+          });
+
+          const conversacionesData = await Promise.all(conversacionesPromises);
+
+          // Ordenar por fecha del último mensaje (más reciente primero)
+          conversacionesData.sort((a, b) => 
+            new Date(b.ultimoMensajeFecha).getTime() - new Date(a.ultimoMensajeFecha).getTime()
+          );
+
+          setConversaciones(conversacionesData);
+        } catch (error) {
+          console.error('Error procesando conversaciones:', error);
+        } finally {
+          setCargando(false);
+        }
+      },
+      (error) => {
+        console.error('Error en suscripción de conversaciones:', error);
+        setCargando(false);
+      }
+    );
+
+    // Cleanup
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+        unsubscribeRef.current = null;
+      }
+    };
+  }, [usuarioActual, obtenerUsuario]);
 
   const formatearFecha = (fechaISO: string): string => {
-    const fecha = new Date(fechaISO);
-    const ahora = new Date();
-    const diferencia = ahora.getTime() - fecha.getTime();
-    const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
+    try {
+      const fecha = new Date(fechaISO);
+      const ahora = new Date();
+      const diferencia = ahora.getTime() - fecha.getTime();
+      const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
 
-    if (dias === 0) {
-      return fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-    } else if (dias === 1) {
-      return 'Ayer';
-    } else if (dias < 7) {
-      return fecha.toLocaleDateString('es-ES', { weekday: 'long' });
-    } else {
-      return fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+      if (dias === 0) {
+        return fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+      } else if (dias === 1) {
+        return 'Ayer';
+      } else if (dias < 7) {
+        return fecha.toLocaleDateString('es-ES', { weekday: 'long' });
+      } else {
+        return fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+      }
+    } catch {
+      return '';
     }
   };
 
-  const abrirChat = (conversacion: Conversacion) => {
-    history.push('/chat', {
-      conversacionId: conversacion.id,
-      usuario: conversacion.otroUsuario
-    });
+    const abrirChat = (conversacion: Conversacion) => {
+    history.push(`/chat/${conversacion.id}/${conversacion.otroUsuario?.uid}`);
+    };
+
+  const volverAtras = () => {
+    // Limpiar suscripción antes de navegar
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current();
+      unsubscribeRef.current = null;
+    }
+    history.push('/dashboard');
   };
 
   return (
@@ -121,7 +177,7 @@ const HistorialConversaciones: React.FC = () => {
             <IonIcon 
               icon={arrowBack} 
               className="historial-back" 
-              onClick={() => history.goBack()}
+              onClick={volverAtras}
             />
             <h1 className="historial-title">Conversaciones</h1>
           </div>
