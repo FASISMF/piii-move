@@ -107,7 +107,7 @@ piii-move/
 
 ## 👨‍💻 Autor
 
-**Francisco** - Trabajo de Fin de Grado (DAM)
+**Francisco de Asis Margelino Furiscal** - Trabajo de Fin de Grado (DAM)
 
 ## 📄 Licencia
 
