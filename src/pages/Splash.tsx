@@ -29,7 +29,11 @@ const Splash: React.FC = () => {
     <IonPage>
       <IonContent className="splash-container">
         <div className="splash-content">
-          <h1 className="splash-title">Piii-Move!</h1>
+          <img 
+            src="/assets/logo_piii_move.png" 
+            alt="Piii-Move!" 
+            className="splash-logo" 
+          />
           <p className="splash-subtitle">Comunica. Conecta. Conduce.</p>
           <IonSpinner name="crescent" className="splash-spinner" />
         </div>

@@ -58,7 +58,11 @@ const Login: React.FC = () => {
     <IonPage>
       <IonContent className="login-container">
         <div className="login-content">
-          <h1 className="login-title">Piii-Move!</h1>
+          <img 
+            src="/assets/logo_piii_move.png" 
+            alt="Piii-Move!" 
+            className="login-logo" 
+          />
           <p className="login-subtitle">Inicia sesión para continuar</p>
 
           <div className="login-form">

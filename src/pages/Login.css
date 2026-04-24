@@ -31,9 +31,14 @@
 }
 
 .login-input {
-  --background: white;
-  --border-radius: 10px;
-  --padding-start: 15px;
+  --background: #fff8e1;
+  --border-radius: 8px;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  border: 2px solid #ff6b35;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  --highlight-background: transparent;
 }
 
 .login-button {
@@ -65,4 +70,21 @@
 
 .login-link:hover {
   text-decoration: underline;
+}
+
+ion-item {
+  --background: transparent;
+  --border-style: none;
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --inner-border-width: 0;
+}
+
+.login-logo {
+  width: 180px;
+  height: auto;
+  margin-bottom: 10px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }

@@ -30,3 +30,9 @@
   --color: white;
   transform: scale(1.5);
 }
+
+.splash-logo {
+  width: 200px;
+  height: auto;
+  margin-bottom: 20px;
+}

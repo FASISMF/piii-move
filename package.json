@@ -23,6 +23,7 @@
     "@types/react-router-dom": "^5.3.3",
     "firebase": "^12.8.0",
     "ionicons": "^7.4.0",
+    "jspdf": "^4.2.1",
     "qrcode.react": "^4.2.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",

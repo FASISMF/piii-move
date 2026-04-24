@@ -5,10 +5,18 @@ import {
   IonButton,
   IonText,
   IonSpinner,
-  useIonViewWillEnter  // ← AÑADIR ESTE IMPORT
+  IonActionSheet,
+  useIonViewWillEnter
 } from '@ionic/react';
-import { arrowBack, personCircleOutline, alertCircleOutline, chatbubbleOutline, checkmarkCircleOutline } from 'ionicons/icons';
-import { useState, useRef, useCallback } from 'react';  // ← QUITAR useEffect de aquí
+import { 
+  arrowBack, 
+  personCircleOutline, 
+  chatbubbleOutline, 
+  checkmarkCircleOutline,
+  musicalNotesOutline,
+  volumeHighOutline
+} from 'ionicons/icons';
+import { useState, useRef, useCallback } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { collection, addDoc, query, where, getDocs, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../services/firebase';
@@ -24,6 +32,20 @@ interface RouteParams {
   usuarioId: string;
 }
 
+interface SonidoClaxon {
+  id: string;
+  nombre: string;
+  archivo: string;
+}
+
+const SONIDOS_CLAXON: SonidoClaxon[] = [
+  { id: 'claxon1', nombre: 'Claxon Clásico', archivo: '/assets/sounds/claxon1.mp3' },
+  { id: 'claxon2', nombre: 'Bocina Larga', archivo: '/assets/sounds/claxon2.mp3' },
+  { id: 'claxon3', nombre: 'Bocina Musical', archivo: '/assets/sounds/claxon3.mp3' },
+  { id: 'claxon4', nombre: 'Bocina Camión', archivo: '/assets/sounds/claxon4.mp3' },
+  { id: 'claxon4', nombre: 'Bocina Barco', archivo: '/assets/sounds/claxon5.mp3' },
+];
+
 const ResultadoQR: React.FC = () => {
   const history = useHistory();
   const { usuarioId } = useParams<RouteParams>();
@@ -34,17 +56,15 @@ const ResultadoQR: React.FC = () => {
   const [mensajeEnviado, setMensajeEnviado] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [navegando, setNavegando] = useState(false);
+  const [pulsando, setPulsando] = useState(false);
+  const [mostrarSonidos, setMostrarSonidos] = useState(false);
+  const [sonidoSeleccionado, setSonidoSeleccionado] = useState<SonidoClaxon>(SONIDOS_CLAXON[0]);
   
   const conversacionIdRef = useRef<string | null>(null);
   const operacionEnCurso = useRef(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const usuarioActual = auth.currentUser;
-
-  // Log para debug (puedes quitar después)
-  console.log('=== RENDER ResultadoQR ===');
-  console.log('usuarioId (URL):', usuarioId);
-  console.log('navegando state:', navegando);
-  console.log('cargandoUsuario state:', cargandoUsuario);
 
   // Función para cargar usuario
   const cargarUsuario = useCallback(async () => {
@@ -53,9 +73,6 @@ const ResultadoQR: React.FC = () => {
       return;
     }
 
-    console.log('=== CARGANDO USUARIO ===');
-
-    // Resetear TODOS los estados
     setCargandoUsuario(true);
     setMensajeEnviado(false);
     setError(null);
@@ -88,12 +105,19 @@ const ResultadoQR: React.FC = () => {
     }
   }, [usuarioId, history]);
 
-  // USAR useIonViewWillEnter en lugar de useEffect
-  // Este hook se ejecuta CADA VEZ que la vista se muestra
   useIonViewWillEnter(() => {
-    console.log('=== ION VIEW WILL ENTER ===');
     cargarUsuario();
   });
+
+  // Reproducir sonido de claxon
+  const reproducirSonido = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    audioRef.current = new Audio(sonidoSeleccionado.archivo);
+    audioRef.current.play().catch(err => console.log('Error reproduciendo sonido:', err));
+  };
 
   // Buscar conversación existente
   const buscarConversacionExistente = async (): Promise<string | null> => {
@@ -163,6 +187,11 @@ const ResultadoQR: React.FC = () => {
   const enviarAviso = async () => {
     if (!usuarioActual || !usuarioEscaneado || operacionEnCurso.current) return;
 
+    // Efecto visual y sonido
+    setPulsando(true);
+    reproducirSonido();
+    setTimeout(() => setPulsando(false), 300);
+
     operacionEnCurso.current = true;
     setEnviando(true);
     setError(null);
@@ -174,7 +203,7 @@ const ResultadoQR: React.FC = () => {
         throw new Error('No se pudo crear la conversación');
       }
 
-      const mensajeTexto = '¡Hola! Te he enviado un aviso desde Piii-Move!';
+      const mensajeTexto = '🚗 ¡PIIII! ¡Te he enviado un aviso desde Piii-Move!';
       
       await addDoc(collection(db, 'mensajes'), {
         conversacionId: conversacionId,
@@ -203,12 +232,7 @@ const ResultadoQR: React.FC = () => {
   };
 
   const iniciarChat = async () => {
-    console.log('=== INICIAR CHAT ===');
-    console.log('operacionEnCurso:', operacionEnCurso.current);
-    console.log('navegando:', navegando);
-
     if (!usuarioActual || !usuarioEscaneado || operacionEnCurso.current || navegando) {
-      console.log('BLOQUEADO');
       return;
     }
 
@@ -223,7 +247,6 @@ const ResultadoQR: React.FC = () => {
         throw new Error('No se pudo obtener la conversación');
       }
 
-      console.log('Navegando a chat:', conversacionId);
       history.push(`/chat/${conversacionId}/${usuarioEscaneado.uid}`);
       
     } catch (err) {
@@ -239,11 +262,9 @@ const ResultadoQR: React.FC = () => {
     return (
       <IonPage>
         <IonContent className="resultado-container">
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+          <div className="resultado-loading">
             <IonSpinner name="crescent" color="primary" />
-            <p style={{ marginTop: '15px', color: '#666' }}>
-              {navegando ? 'Abriendo chat...' : 'Cargando...'}
-            </p>
+            <p>{navegando ? 'Abriendo chat...' : 'Cargando...'}</p>
           </div>
         </IonContent>
       </IonPage>
@@ -255,7 +276,7 @@ const ResultadoQR: React.FC = () => {
     return (
       <IonPage>
         <IonContent className="resultado-container">
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+          <div className="resultado-loading">
             <IonText color="danger">{error || 'Usuario no encontrado'}</IonText>
           </div>
         </IonContent>
@@ -283,32 +304,40 @@ const ResultadoQR: React.FC = () => {
           </div>
 
           {error && (
-            <div style={{ textAlign: 'center', marginBottom: '15px', padding: '10px' }}>
+            <div className="resultado-error">
               <IonText color="danger">{error}</IonText>
             </div>
           )}
 
           {!mensajeEnviado ? (
             <div className="resultado-acciones">
-              <IonButton 
-                expand="block" 
-                size="large"
-                onClick={enviarAviso}
-                disabled={enviando}
-                className="resultado-btn-avisar"
-              >
-                {enviando ? (
-                  <>
-                    <IonSpinner name="crescent" style={{ marginRight: '10px', width: '20px', height: '20px' }} />
-                    Enviando...
-                  </>
-                ) : (
-                  <>
-                    <IonIcon icon={alertCircleOutline} slot="start" />
-                    Avisar
-                  </>
-                )}
-              </IonButton>
+              {/* Selector de sonido */}
+              <div className="sonido-selector" onClick={() => setMostrarSonidos(true)}>
+                <IonIcon icon={musicalNotesOutline} />
+                <span>{sonidoSeleccionado.nombre}</span>
+                <small>Toca para cambiar</small>
+              </div>
+
+              {/* Botón Claxon Circular */}
+              <div className="claxon-container">
+                <button 
+                  className={`claxon-button ${pulsando ? 'pulsando' : ''} ${enviando ? 'enviando' : ''}`}
+                  onClick={enviarAviso}
+                  disabled={enviando}
+                >
+                  <div className="claxon-inner">
+                    {enviando ? (
+                      <IonSpinner name="crescent" className="claxon-spinner" />
+                    ) : (
+                      <>
+                        <IonIcon icon={volumeHighOutline} className="claxon-icon" />
+                        <span className="claxon-text">PIII!</span>
+                      </>
+                    )}
+                  </div>
+                </button>
+                <p className="claxon-hint">Pulsa para avisar</p>
+              </div>
 
               <IonButton 
                 expand="block" 
@@ -347,6 +376,29 @@ const ResultadoQR: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Action Sheet para seleccionar sonido */}
+        <IonActionSheet
+          isOpen={mostrarSonidos}
+          onDidDismiss={() => setMostrarSonidos(false)}
+          header="Selecciona un sonido"
+          buttons={[
+            ...SONIDOS_CLAXON.map(sonido => ({
+              text: sonido.nombre,
+              icon: sonido.id === sonidoSeleccionado.id ? checkmarkCircleOutline : musicalNotesOutline,
+              handler: () => {
+                setSonidoSeleccionado(sonido);
+                // Previsualizar sonido
+                const audio = new Audio(sonido.archivo);
+                audio.play().catch(err => console.log('Error:', err));
+              }
+            })),
+            {
+              text: 'Cancelar',
+              role: 'cancel'
+            }
+          ]}
+        />
       </IonContent>
     </IonPage>
   );

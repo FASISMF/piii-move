@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   gap: 15px;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
 }
 
 .resultado-back {
@@ -34,47 +34,183 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 30px 20px;
+  padding: 25px 20px;
   background: white;
   border-radius: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  margin-bottom: 30px;
+  margin-bottom: 25px;
 }
 
 .resultado-avatar {
-  font-size: 6rem;
+  font-size: 5rem;
   color: #ff6b35;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .resultado-nombre {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: bold;
   color: #333;
   margin: 0 0 5px 0;
 }
 
+.resultado-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #666;
+}
+
+.resultado-loading p {
+  margin-top: 15px;
+}
+
+.resultado-error {
+  text-align: center;
+  margin-bottom: 15px;
+  padding: 10px;
+}
+
 .resultado-acciones {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  align-items: center;
+  gap: 20px;
 }
 
-.resultado-btn-avisar {
-  --background: #ff6b35;
-  --border-radius: 15px;
-  height: 60px;
-  font-size: 1.2rem;
+/* Selector de sonido */
+.sonido-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+  max-width: 280px;
+}
+
+.sonido-selector:active {
+  transform: scale(0.98);
+}
+
+.sonido-selector ion-icon {
+  font-size: 1.5rem;
+  color: #ff6b35;
+}
+
+.sonido-selector span {
+  flex: 1;
+  font-weight: 600;
+  color: #333;
+}
+
+.sonido-selector small {
+  color: #999;
+  font-size: 0.75rem;
+}
+
+/* Contenedor del botón claxon */
+.claxon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+}
+
+/* Botón claxon circular */
+.claxon-button {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(145deg, #ff4444, #cc0000);
+  box-shadow: 
+    0 8px 25px rgba(204, 0, 0, 0.4),
+    0 4px 10px rgba(0, 0, 0, 0.2),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+  position: relative;
+  overflow: hidden;
+}
+
+.claxon-button::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 20px;
+  width: 40px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: rotate(-30deg);
+}
+
+.claxon-button:active:not(.enviando),
+.claxon-button.pulsando {
+  transform: scale(0.92);
+  box-shadow: 
+    0 4px 15px rgba(204, 0, 0, 0.4),
+    0 2px 5px rgba(0, 0, 0, 0.2),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.claxon-button.enviando {
+  background: linear-gradient(145deg, #ff7777, #dd3333);
+  cursor: wait;
+}
+
+.claxon-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: white;
+}
+
+.claxon-icon {
+  font-size: 3.5rem;
+  margin-bottom: 5px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+}
+
+.claxon-text {
+  font-size: 1.4rem;
   font-weight: bold;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
+  letter-spacing: 2px;
 }
 
+.claxon-spinner {
+  --color: white;
+  width: 50px;
+  height: 50px;
+}
+
+.claxon-hint {
+  margin-top: 15px;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+/* Botón chat */
 .resultado-btn-chat {
   --border-color: #ff6b35;
   --color: #ff6b35;
   --border-radius: 15px;
   height: 50px;
+  width: 100%;
+  max-width: 300px;
 }
 
+/* Éxito */
 .resultado-exito {
   display: flex;
   flex-direction: column;
@@ -113,4 +249,28 @@
   --border-radius: 10px;
   height: 45px;
   width: 100%;
+}
+
+/* Animación de ondas al pulsar */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.claxon-button.pulsando::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 68, 68, 0.6);
+  animation: pulse-ring 0.6s ease-out;
 }
